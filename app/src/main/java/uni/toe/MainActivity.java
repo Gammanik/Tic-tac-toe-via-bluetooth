@@ -6,7 +6,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements Start_Fragment.OnFragmentInteractionListener  {
 
 
     FragmentManager fragmentManager;
@@ -19,5 +19,10 @@ public class MainActivity extends AppCompatActivity {
         //fragment for start or join the game
         fragmentManager = getSupportFragmentManager();
         fragmentManager.beginTransaction().replace(R.id.activity_main, new Start_Fragment()).commit();
+    }
+
+    @Override
+    public void onButtonSelected(int id) {
+
     }
 }
