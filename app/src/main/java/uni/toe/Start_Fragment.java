@@ -105,8 +105,10 @@ public class Start_Fragment extends Fragment {
         btn_client.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if (mListener != null) //don't call if null, duh...
+                    mListener.onButtonSelected(2);
                 Context context = getContext();
-                String text = "secondgi button!";
+                String text = "second button!";
                 Toast.makeText(context, text, Toast.LENGTH_SHORT).show();
             }
         });
@@ -114,6 +116,8 @@ public class Start_Fragment extends Fragment {
         btn_server.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if (mListener != null) //don't call if null, duh...
+                    mListener.onButtonSelected(1);
                 Context context = getContext();
                 String text = "first button!";
                 Toast.makeText(context, text, Toast.LENGTH_SHORT).show();
@@ -121,7 +125,7 @@ public class Start_Fragment extends Fragment {
         });
 
         //TODO:permisssion stuff
-        //startbt();
+        startbt();
         return myView;
     }
 
