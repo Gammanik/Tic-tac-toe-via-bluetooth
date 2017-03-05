@@ -47,7 +47,6 @@ public class Start_Fragment extends Fragment {
     //This code will check to see if there is a bluetooth device and
     //turn it on if is it turned off.
     public void startbt() {
-        //TODO: check for the permissions here???
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         if (mBluetoothAdapter == null) {
             // Device does not support Bluetooth
@@ -124,7 +123,6 @@ public class Start_Fragment extends Fragment {
             }
         });
 
-        //TODO:permisssion stuff
         startbt();
         return myView;
     }

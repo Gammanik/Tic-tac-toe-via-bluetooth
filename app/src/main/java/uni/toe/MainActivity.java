@@ -26,6 +26,16 @@ public class MainActivity extends AppCompatActivity implements Start_Fragment.On
 
     @Override
     public void onButtonSelected(int id) {
-
+        FragmentTransaction transaction = fragmentManager.beginTransaction();
+        // Replace whatever is in the fragment_container view with this fragment,
+        if (id == 2) { //client
+            //transaction.replace(R.id.activity_main, new Client_Fragment());
+        } else { //server
+            transaction.replace(R.id.activity_main, new Server_Fragment());
+        }
+        // and add the transaction to the back stack so the user can navigate back
+        transaction.addToBackStack(null);
+        // Commit the transaction
+        transaction.commit();
     }
 }
