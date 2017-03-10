@@ -17,12 +17,14 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -36,11 +38,13 @@ public class Client_Fragment extends Fragment {
     BluetoothDevice device;
     BluetoothDevice remoteDevice;
 
+    private BluetoothService mChatService = null;
+
     public Client_Fragment() {
         // Required empty public constructor
     }
 
-
+/*
     private Handler handler =  new Handler(new Handler.Callback() {
         @Override
         public boolean handleMessage(Message msg) {
@@ -49,6 +53,57 @@ public class Client_Fragment extends Fragment {
         }
 
     });
+*/
+
+    private final Handler handler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            FragmentActivity activity = getActivity();
+            switch (msg.what) {
+                case Constants.MESSAGE_STATE_CHANGE:
+                    switch (msg.arg1) {
+                        case BluetoothService.STATE_CONNECTED:
+                            //setStatus(getString(R.string.title_connected_to, mConnectedDeviceName));
+                            //mConversationArrayAdapter.clear();
+                            break;
+                        case BluetoothService.STATE_CONNECTING:
+                            //setStatus(R.string.title_connecting);
+                            break;
+                        case BluetoothService.STATE_LISTEN:
+                        case BluetoothService.STATE_NONE:
+                            //setStatus(R.string.title_not_connected);
+                            break;
+                    }
+                    break;
+                case Constants.MESSAGE_WRITE:
+                    byte[] writeBuf = (byte[]) msg.obj;
+                    // construct a string from the buffer
+                    String writeMessage = new String(writeBuf);
+                    //mConversationArrayAdapter.add("Me:  " + writeMessage);
+                    break;
+                case Constants.MESSAGE_READ:
+                    byte[] readBuf = (byte[]) msg.obj;
+                    // construct a string from the valid bytes in the buffer
+                    String readMessage = new String(readBuf, 0, msg.arg1);
+                    //mConversationArrayAdapter.add(mConnectedDeviceName + ":  " + readMessage);
+                    break;
+                case Constants.MESSAGE_DEVICE_NAME:
+                    // save the connected device's name
+                    //mConnectedDeviceName = msg.getData().getString(Constants.DEVICE_NAME);
+                    if (null != activity) {
+                        Toast.makeText(activity, "Connected to ", Toast.LENGTH_SHORT).show();
+                    }
+                    break;
+                case Constants.MESSAGE_TOAST:
+                    if (null != activity) {
+                        Toast.makeText(activity, msg.getData().getString(Constants.TOAST),
+                                Toast.LENGTH_SHORT).show();
+                    }
+                    break;
+            }
+        }
+    };
+
     public void mkmsg(String str) {
         //handler junk, because thread can't update screen!
         Message msg = new Message();
@@ -67,11 +122,11 @@ public class Client_Fragment extends Fragment {
         //output textview
         output = (TextView) myView.findViewById(R.id.ct_output);
         btn_device = (Button) myView.findViewById(R.id.which_device);
+
         btn_device.setOnClickListener( new View.OnClickListener(){
             @Override
             public void onClick(View v) {
                 querypaired();
-
             }
         });
         btn_start = (Button) myView.findViewById(R.id.start_client);
@@ -97,6 +152,32 @@ public class Client_Fragment extends Fragment {
     }
 
 
+    @Override
+    public void onStart() {
+        super.onStart();
+        //creating a BluetoothService here
+        if(mChatService == null) {
+            mChatService = new BluetoothService(getActivity(), handler);
+        }
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if (mChatService != null) {
+            mChatService.stop();
+        }
+    }
+
+    @Override
+    public void onResume() {
+        mkmsg("ONRESUME connecting to server..");
+        super.onResume();
+    }
+
+
+
+    //setting the device
     public void querypaired() {
         Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
         // If there are paired devices
@@ -134,101 +215,13 @@ public class Client_Fragment extends Fragment {
 
     public void startClient() {
         if (device != null) {
-            new Thread(new ConnectThread(device)).start();
-        }
+            mChatService.connect(device);
+            String msg = "wassup from client";
+            mChatService.write(msg.getBytes());
+        } else
+            mkmsg("device is null");
     }
 
 
-    /**
-     * This thread runs while attempting to make an outgoing connection
-     * with a device. It runs straight through; the connection either
-     * succeeds or fails.
-     */
-
-    private class ConnectThread extends Thread {
-        private BluetoothSocket socket;
-        private final BluetoothDevice mmDevice;
-
-        public ConnectThread(BluetoothDevice device) {
-            mmDevice = device;
-            BluetoothSocket tmp = null;
-
-            // Get a BluetoothSocket for a connection with the
-            // given BluetoothDevice
-            try {
-                tmp = device.createRfcommSocketToServiceRecord(MainActivity.MY_UUID);
-            } catch (IOException e) {
-                mkmsg("Client connection failed: "+e.getMessage()+"\n");
-            }
-            socket = tmp;
-
-        }
-
-        public void run() {
-            mkmsg("Client running\n");
-            // Always cancel discovery because it will slow down a connection
-            mBluetoothAdapter.cancelDiscovery();
-
-            // Make a connection to the BluetoothSocket
-            try {
-                // This is a blocking call and will only return on a
-                // successful connection or an exception
-                socket.connect();
-            } catch (IOException e) {
-                mkmsg("Connect failed\n");
-                try {
-                    socket.close();
-                    socket = null;
-                } catch (IOException e2) {
-                    mkmsg("unable to close() socket during connection failure: "+e2.getMessage()+"\n");
-                    socket = null;
-                }
-                // Start the service over to restart listening mode
-            }
-            // If a connection was accepted
-            if (socket != null) {
-                mkmsg("Connection made\n");
-                mkmsg("Remote device address: "+socket.getRemoteDevice().getAddress()+"\n");
-                //Note this is copied from the TCPdemo code.
-                try {
-                    PrintWriter out = new PrintWriter( new BufferedWriter( new OutputStreamWriter(socket.getOutputStream())),true);
-                    mkmsg("Attempting to send message ...\n");
-                    out.println("hello from Bluetooth Demo Client");
-                    out.flush();
-                    mkmsg("Message sent...\n");
-
-                    mkmsg("Attempting to receive a message ...\n");
-                    BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-                    String str = in.readLine();
-                    mkmsg("received a message:\n" + str+"\n");
-
-
-
-                    mkmsg("We are done, closing connection\n");
-                } catch(Exception e) {
-                    mkmsg("Error happened sending/receiving\n");
-
-                } finally {
-                    try {
-                        socket.close();
-                    } catch (IOException e) {
-                        mkmsg("Unable to close socket"+e.getMessage()+"\n");
-                    }
-                }
-            } else {
-                mkmsg("Made connection, but socket is null\n");
-            }
-            mkmsg("Client ending \n");
-
-        }
-
-        public void cancel() {
-            try {
-                socket.close();
-            } catch (IOException e) {
-                mkmsg( "close() of connect socket failed: "+e.getMessage() +"\n");
-            }
-        }
-    }
 
 }
