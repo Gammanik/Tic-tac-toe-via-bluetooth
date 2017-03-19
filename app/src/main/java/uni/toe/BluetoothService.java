@@ -173,8 +173,6 @@ public class BluetoothService {
         bundle.putString(Constants.DEVICE_NAME, device.getName());
         msg.setData(bundle);
         mHandler.sendMessage(msg);
-        // Update UI title
-        updateUserInterfaceTitle();
     }
 
     /**

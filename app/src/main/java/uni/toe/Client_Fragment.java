@@ -79,12 +79,15 @@ public class Client_Fragment extends Fragment {
                     byte[] writeBuf = (byte[]) msg.obj;
                     // construct a string from the buffer
                     String writeMessage = new String(writeBuf);
-                    //mConversationArrayAdapter.add("Me:  " + writeMessage);
+                    mkmsg(writeMessage);
                     break;
                 case Constants.MESSAGE_READ:
                     byte[] readBuf = (byte[]) msg.obj;
                     // construct a string from the valid bytes in the buffer
                     String readMessage = new String(readBuf, 0, msg.arg1);
+
+                    output.append("got a msg from server: " + readMessage);
+                    //mkmsg("got a message: " + readMessage);
                     //mConversationArrayAdapter.add(mConnectedDeviceName + ":  " + readMessage);
                     break;
                 case Constants.MESSAGE_DEVICE_NAME:
@@ -215,9 +218,11 @@ public class Client_Fragment extends Fragment {
 
     public void startClient() {
         if (device != null) {
+            mkmsg("go connecting with: " + device);
+
             mChatService.connect(device);
             String msg = "wassup from client";
-            mChatService.write(msg.getBytes());
+            //mChatService.write(msg.getBytes());
         } else
             mkmsg("device is null");
     }

@@ -79,16 +79,19 @@ public class Server_Fragment extends Fragment {
                     byte[] writeBuf = (byte[]) msg.obj;
                     // construct a string from the buffer
                     String writeMessage = new String(writeBuf);
-                    //mConversationArrayAdapter.add("Me:  " + writeMessage);
+                    mkmsg(writeMessage);
                     break;
                 case Constants.MESSAGE_READ:
                     byte[] readBuf = (byte[]) msg.obj;
                     // construct a string from the valid bytes in the buffer
                     String readMessage = new String(readBuf, 0, msg.arg1);
+
+                    output.append("got a msg from client: " + readMessage);
+                    //mkmsg("got a message: " + readMessage); no need to send
                     //mConversationArrayAdapter.add(mConnectedDeviceName + ":  " + readMessage);
                     break;
                 case Constants.MESSAGE_DEVICE_NAME:
-                    // save the connected device's name
+                    //TODO: save the connected device's name
                     //mConnectedDeviceName = msg.getData().getString(Constants.DEVICE_NAME);
                     if (null != activity) {
                         Toast.makeText(activity, "Connected to ", Toast.LENGTH_SHORT).show();
@@ -103,6 +106,7 @@ public class Server_Fragment extends Fragment {
             }
         }
     };
+
 
     @Override
     public void onStart() {
@@ -124,7 +128,7 @@ public class Server_Fragment extends Fragment {
         btn_start.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                output.append("Starting server\n");
+                output.append("sending msg\n");
                 startServer();
             }
         });
@@ -152,6 +156,13 @@ public class Server_Fragment extends Fragment {
     public void onResume() {
         mkmsg("ONRESUME creating ");
         super.onResume();
+        if (mChatService != null) {
+            // Only if the state is STATE_NONE, do we know that we haven't started already
+            if (mChatService.getState() == BluetoothService.STATE_NONE) {
+                // Start the Bluetooth chat services
+                mChatService.start();
+            }
+        }
 
     }
 
@@ -168,7 +179,12 @@ public class Server_Fragment extends Fragment {
 
     public void startServer() {
         //mChatService.start();
-        mChatService.write("wassup from server".getBytes());
+
+        if (mChatService.getState() != BluetoothService.STATE_CONNECTED) {
+            Toast.makeText(getActivity(), "not connected", Toast.LENGTH_SHORT).show();
+            return;
+        }
+       mChatService.write("wassup from server".getBytes());
     }
 
 
