@@ -43,18 +43,7 @@ public class Server_Fragment extends Fragment {
     public Server_Fragment() {
         // Required empty public constructor
     }
-
-    /*
-    private Handler handler = new Handler(new Handler.Callback() {
-        @Override
-        public boolean handleMessage(Message msg) {
-            output.append(msg.getData().getString("msg"));
-            return true;
-        }
-
-    });
-    */
-
+    
     private final Handler handler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
@@ -86,9 +75,7 @@ public class Server_Fragment extends Fragment {
                     // construct a string from the valid bytes in the buffer
                     String readMessage = new String(readBuf, 0, msg.arg1);
 
-                    output.append("got a msg from client: " + readMessage);
-                    //mkmsg("got a message: " + readMessage); no need to send
-                    //mConversationArrayAdapter.add(mConnectedDeviceName + ":  " + readMessage);
+                    output.append("got a msg from client: " + readMessage + "\n");
                     break;
                 case Constants.MESSAGE_DEVICE_NAME:
                     //TODO: save the connected device's name
@@ -129,7 +116,7 @@ public class Server_Fragment extends Fragment {
             @Override
             public void onClick(View v) {
                 output.append("sending msg\n");
-                startServer();
+                sendMessage();
             }
         });
 
@@ -177,14 +164,12 @@ public class Server_Fragment extends Fragment {
     }
 
 
-    public void startServer() {
-        //mChatService.start();
-
+    public void sendMessage() {
         if (mChatService.getState() != BluetoothService.STATE_CONNECTED) {
             Toast.makeText(getActivity(), "not connected", Toast.LENGTH_SHORT).show();
             return;
         }
-       mChatService.write("wassup from server".getBytes());
+       mChatService.write("wassup from server \n".getBytes());
     }
 
 

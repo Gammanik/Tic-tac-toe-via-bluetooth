@@ -33,7 +33,7 @@ import android.widget.Toast;
 public class Client_Fragment extends Fragment {
     String TAG = "client";
     TextView output;
-    Button btn_start, btn_device;
+    Button btn_start, btn_device, btn_send;
     BluetoothAdapter mBluetoothAdapter =null;
     BluetoothDevice device;
     BluetoothDevice remoteDevice;
@@ -44,17 +44,6 @@ public class Client_Fragment extends Fragment {
         // Required empty public constructor
     }
 
-/*
-    private Handler handler =  new Handler(new Handler.Callback() {
-        @Override
-        public boolean handleMessage(Message msg) {
-            output.append(msg.getData().getString("msg"));
-            return true;
-        }
-
-    });
-*/
-
     private final Handler handler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
@@ -64,7 +53,6 @@ public class Client_Fragment extends Fragment {
                     switch (msg.arg1) {
                         case BluetoothService.STATE_CONNECTED:
                             //setStatus(getString(R.string.title_connected_to, mConnectedDeviceName));
-                            //mConversationArrayAdapter.clear();
                             break;
                         case BluetoothService.STATE_CONNECTING:
                             //setStatus(R.string.title_connecting);
@@ -85,14 +73,9 @@ public class Client_Fragment extends Fragment {
                     byte[] readBuf = (byte[]) msg.obj;
                     // construct a string from the valid bytes in the buffer
                     String readMessage = new String(readBuf, 0, msg.arg1);
-
-                    output.append("got a msg from server: " + readMessage);
-                    //mkmsg("got a message: " + readMessage);
-                    //mConversationArrayAdapter.add(mConnectedDeviceName + ":  " + readMessage);
+                    output.append("got a msg from server: " + readMessage +"\n");
                     break;
                 case Constants.MESSAGE_DEVICE_NAME:
-                    // save the connected device's name
-                    //mConnectedDeviceName = msg.getData().getString(Constants.DEVICE_NAME);
                     if (null != activity) {
                         Toast.makeText(activity, "Connected to ", Toast.LENGTH_SHORT).show();
                     }
@@ -124,8 +107,8 @@ public class Client_Fragment extends Fragment {
 
         //output textview
         output = (TextView) myView.findViewById(R.id.ct_output);
+        //buttons
         btn_device = (Button) myView.findViewById(R.id.which_device);
-
         btn_device.setOnClickListener( new View.OnClickListener(){
             @Override
             public void onClick(View v) {
@@ -141,6 +124,16 @@ public class Client_Fragment extends Fragment {
                 startClient();
             }
         });
+        btn_send = (Button) myView.findViewById(R.id.send_msg_client);
+        btn_send.setEnabled(false);
+        btn_send.setOnClickListener( new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                output.append("msg sent\n");
+                sendMessage();
+            }
+        });
+
         //setup the bluetooth adapter.
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         if (mBluetoothAdapter == null) {
@@ -162,6 +155,7 @@ public class Client_Fragment extends Fragment {
         if(mChatService == null) {
             mChatService = new BluetoothService(getActivity(), handler);
         }
+        querypaired();
     }
 
     @Override
@@ -174,7 +168,7 @@ public class Client_Fragment extends Fragment {
 
     @Override
     public void onResume() {
-        mkmsg("ONRESUME connecting to server..");
+        Log.v(TAG, "onResume");
         super.onResume();
     }
 
@@ -218,13 +212,21 @@ public class Client_Fragment extends Fragment {
 
     public void startClient() {
         if (device != null) {
-            mkmsg("go connecting with: " + device);
+            Log.v(TAG, "connecting with: " + device);
 
             mChatService.connect(device);
-            String msg = "wassup from client";
-            //mChatService.write(msg.getBytes());
+            btn_send.setEnabled(true); //sending only if connected
         } else
-            mkmsg("device is null");
+            Log.v(TAG, "device is null");
+    }
+
+    public void sendMessage() {
+        if (mChatService.getState() != BluetoothService.STATE_CONNECTED) {
+            Toast.makeText(getActivity(), "not connected", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        String msg = "wassup from client \n";
+        mChatService.write(msg.getBytes());
     }
 
 

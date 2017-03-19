@@ -19,6 +19,12 @@
         android:layout_height="wrap_content"
         android:text="Start Client" />
 
+    <Button
+        android:id="@+id/send_msg_client"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="Send message" />
+
     <android.support.v4.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
