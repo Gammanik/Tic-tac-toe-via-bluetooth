@@ -11,6 +11,8 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -29,8 +31,9 @@ public class Client_Fragment extends Fragment {
     Button btn_start, btn_device, btn_send, btn_ready;
     BluetoothAdapter mBluetoothAdapter =null;
     BluetoothDevice device;
+    FragmentManager fragmentManager = null;
 
-    private BluetoothService mChatService = null;
+    private static BluetoothService mChatService = null;
 
     public Client_Fragment() {
         // Required empty public constructor
@@ -64,10 +67,14 @@ public class Client_Fragment extends Fragment {
 
                     //when server have the symbol chosen
                     if(readMessage.equals("server decided to be X"))  {
-                        output.append("playing O // agree??"); //TODO: dialog box
+                        output.append("playing O // agree??");
+                        AlertDialog dialog = createDialog("O");
+                        dialog.show();
                     }
                     if(readMessage.equals("server decided to be O"))  {
                         output.append("playing X // agree??");
+                        AlertDialog dialog = createDialog("X");
+                        dialog.show();
                     }
                     break;
                 case Constants.MESSAGE_DEVICE_NAME:
@@ -156,9 +163,7 @@ public class Client_Fragment extends Fragment {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        if (mChatService != null) {
-            mChatService.stop();
-        }
+        //if (mChatService != null) { mChatService.stop();} //we need it!
     }
 
     @Override
@@ -204,6 +209,31 @@ public class Client_Fragment extends Fragment {
         }
     }
 
+    public AlertDialog createDialog(final String markToPlay) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        builder.setMessage("Do you agree to play for: " + markToPlay + "?").setTitle("Player 1 choose");
+        builder.setPositiveButton("Agree", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                //ready to play
+                sendMessage("client ready to play"); //for future mb
+
+                fragmentManager = getActivity().getSupportFragmentManager();
+                FragmentTransaction transaction = fragmentManager.beginTransaction();
+                transaction.replace(R.id.activity_main, Game_Fragment.newInstance(markToPlay, false));
+                transaction.addToBackStack(null);
+                transaction.commit();
+            }
+        });
+        builder.setNegativeButton("No way!", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                //declined
+                sendMessage("client declined the game");
+                Toast.makeText(getActivity(), "that's crazy!", Toast.LENGTH_SHORT).show();
+            }
+        });
+        return builder.create();
+    }
+
 
     public void startClient() {
         if (device != null) {
@@ -222,6 +252,11 @@ public class Client_Fragment extends Fragment {
             return;
         }
         mChatService.write(msg.getBytes());
+    }
+
+    static public BluetoothService getBluetoothService() {
+        //invoke it in Game_Fragment to get the connectedThread??
+        return mChatService;
     }
 
 

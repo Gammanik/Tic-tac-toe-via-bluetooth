@@ -154,7 +154,7 @@ public class Server_Fragment extends Fragment {
 
                 fragmentManager = getActivity().getSupportFragmentManager();
                 FragmentTransaction transaction = fragmentManager.beginTransaction();
-                transaction.replace(R.id.activity_main, Game_Fragment.newInstance("X"));
+                transaction.replace(R.id.activity_main, Game_Fragment.newInstance("X", true));
                 transaction.addToBackStack(null);
                 transaction.commit();
                 Toast.makeText(getActivity(), "X symbol is shosen", Toast.LENGTH_SHORT).show();
@@ -165,6 +165,11 @@ public class Server_Fragment extends Fragment {
             public void onClick(DialogInterface dialog, int id) {
                 // User choose to play O
                 sendMessage("server decided to be O");
+                fragmentManager = getActivity().getSupportFragmentManager();
+                FragmentTransaction transaction = fragmentManager.beginTransaction();
+                transaction.replace(R.id.activity_main, Game_Fragment.newInstance("O", true));
+                transaction.addToBackStack(null);
+                transaction.commit();
                 Toast.makeText(getActivity(), "O symbol is shosen", Toast.LENGTH_SHORT).show();
             }
         });

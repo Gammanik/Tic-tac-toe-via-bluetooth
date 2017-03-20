@@ -156,14 +156,13 @@
                 android:text="O"/>
         </RadioGroup>
         <TextView
-            android:id="@+id/Reset"
+            android:id="@+id/Status"
             android:layout_weight="1"
             android:layout_width="0dp"
             android:layout_height="fill_parent"
-            android:text="reset"
+            android:text="nothing"
             android:textSize="20sp"
             android:gravity="center"
-            android:onClick="resetClick"
             android:clickable="true"/>
         <TextView
             android:id="@+id/thing"

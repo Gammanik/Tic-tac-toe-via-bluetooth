@@ -14,17 +14,26 @@ import android.widget.Toast;
 
 public class Game_Fragment extends Fragment {
 
-    //TextView c11, c12;
+    TextView status;
+
+   public static String turn = "X"; //if turn.equals(mark) then go
 
     BluetoothService mConnectedThread = null;
     //TODO: how to figure who's turn is it?
     private String mark;
     public static String MARK_CHOSEN;
-    public static int[][] matrix = new int[3][3];
+    public static int[][] matrix = new int[3][3]; //matrix to know who won
+
+    public static TextView arrayOfButtons[][] = new TextView[3][3];
+    //buttons
+    //TODO: is it make sence to make them static here?
+    static TextView c00 = null;
+
+    public static String IS_SERVER;
+    private boolean isServer;
 
 
-
-    public static final Game_Fragment newInstance(String mark) {
+    public static final Game_Fragment newInstance(String mark, boolean server) {
         //instead of pulling the connectedThread it's better to put it in constructor
         //TODO: put BluetoothService mConnectedThread in constructor
         //depends if it's client or server
@@ -32,6 +41,7 @@ public class Game_Fragment extends Fragment {
         Game_Fragment game = new Game_Fragment();
         Bundle bdl = new Bundle();
         bdl.putString(MARK_CHOSEN, mark);
+        bdl.putBoolean(IS_SERVER, server);
 
         game.setArguments(bdl);
         return game;
@@ -54,10 +64,6 @@ public class Game_Fragment extends Fragment {
             switch (msg.what) {
                 //assume already connected
                 case Constants.MESSAGE_WRITE:
-                    byte[] writeBuf = (byte[]) msg.obj;
-                    // construct a string from the buffer
-                    String writeMessage = new String(writeBuf);
-                    //make msg
                     break;
                 case Constants.MESSAGE_READ:
                     byte[] readBuf = (byte[]) msg.obj;
@@ -66,7 +72,12 @@ public class Game_Fragment extends Fragment {
                     Toast.makeText(activity, readMessage,
                             Toast.LENGTH_SHORT).show();
 
-                    //
+                    //get a cell clicked
+                    //9 if's statements here??
+                    //in message we getting coordinates
+                    updateUI();
+
+
                     break;
             }
         }
@@ -75,7 +86,14 @@ public class Game_Fragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mConnectedThread = Server_Fragment.getBluetoothService(); //doesn't matter they are same
+        //depends on who created the class: server or client
+
+        isServer = getArguments().getBoolean(IS_SERVER);
+        if(isServer)
+            mConnectedThread = Server_Fragment.getBluetoothService();
+        else
+            mConnectedThread = Client_Fragment.getBluetoothService();
+        
         mConnectedThread.putNewHandler(handler); //really bad
 
         mark = getArguments().getString(MARK_CHOSEN);
@@ -85,19 +103,20 @@ public class Game_Fragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View myView = inflater.inflate(R.layout.fragment_game, container, false);
 
+        status = (TextView) myView.findViewById(R.id.Status);
+        status.setText("playing for: " + mark);
+
         //TODO? all 9 cells clicks implemented here
-        final TextView c11 = (TextView) myView.findViewById(R.id.cell11);
-        c11.setOnClickListener(new View.OnClickListener() {
+        c00 = (TextView) myView.findViewById(R.id.cell11);
+        c00.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 mConnectedThread.write("gogogo".getBytes()); //need to it it in handler
                 //checkIfEmpty() method here - if not not put text
-                c11.setText(mark);
-                //c11.setText("you");
+                //c11.setText(mark);
                 //c11.setEnabled(false);
                 //also need to block all the ohter cells when it's another player's turn
                 //but how to implement another player's turn?
-                //and we will not be able to change them back after blocking as if they are final
             }
         });
 
@@ -112,13 +131,35 @@ public class Game_Fragment extends Fragment {
         }
     }
 
-    public static void cellClick(View v) {
-        /**
-         * call final TextView c11 = (TextView) myView.findViewById(R.id.cell11);
-         * to change them again?
-         * block
-         */
+    private void buttonsToArray() {
+        //to iterate trough buttons later
+        arrayOfButtons[0][0] = c00;
+    }
 
+    public void blockButtons() {
+        //iterate through buttons
+        //and setEnable(false) when it's not our turn
+        //later
+    }
+
+    public void updateUI() {
+        //draw the button according matrix values
+        //make an array of buttons and iterate threw it
+        c00.setText(mark);
+    }
+
+    public void readClickUpdateMatrix(int i, int j) { //sending
+        if(matrix[i][j] == Constants.NONE) { //only if not occupied before
+            switch (mark) {
+                case "X": matrix[i][j] = Constants.X;
+                   break;
+                case "O": matrix[i][j] = Constants.O;
+            }
+        }
+    }
+
+    public void readClickedButton(String msg) {
+        //if(msg.equals(""))
 
     }
 
