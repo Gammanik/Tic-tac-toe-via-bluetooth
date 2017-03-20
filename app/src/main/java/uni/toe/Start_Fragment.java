@@ -106,9 +106,6 @@ public class Start_Fragment extends Fragment {
             public void onClick(View v) {
                 if (mListener != null) //don't call if null, duh...
                     mListener.onButtonSelected(2);
-                Context context = getContext();
-                String text = "second button!";
-                Toast.makeText(context, text, Toast.LENGTH_SHORT).show();
             }
         });
         btn_server = (Button) myView.findViewById(R.id.button1);
@@ -117,9 +114,6 @@ public class Start_Fragment extends Fragment {
             public void onClick(View v) {
                 if (mListener != null) //don't call if null, duh...
                     mListener.onButtonSelected(1);
-                Context context = getContext();
-                String text = "first button!";
-                Toast.makeText(context, text, Toast.LENGTH_SHORT).show();
             }
         });
 

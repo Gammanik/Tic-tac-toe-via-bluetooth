@@ -1,17 +1,10 @@
 package uni.toe;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
 import java.util.Set;
 
 import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
-import android.bluetooth.BluetoothSocket;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.os.Handler;
@@ -33,10 +26,9 @@ import android.widget.Toast;
 public class Client_Fragment extends Fragment {
     String TAG = "client";
     TextView output;
-    Button btn_start, btn_device, btn_send;
+    Button btn_start, btn_device, btn_send, btn_ready;
     BluetoothAdapter mBluetoothAdapter =null;
     BluetoothDevice device;
-    BluetoothDevice remoteDevice;
 
     private BluetoothService mChatService = null;
 
@@ -48,18 +40,16 @@ public class Client_Fragment extends Fragment {
         @Override
         public void handleMessage(Message msg) {
             FragmentActivity activity = getActivity();
+            //TODO later: status bar during the game
             switch (msg.what) {
                 case Constants.MESSAGE_STATE_CHANGE:
                     switch (msg.arg1) {
                         case BluetoothService.STATE_CONNECTED:
-                            //setStatus(getString(R.string.title_connected_to, mConnectedDeviceName));
                             break;
                         case BluetoothService.STATE_CONNECTING:
-                            //setStatus(R.string.title_connecting);
                             break;
                         case BluetoothService.STATE_LISTEN:
                         case BluetoothService.STATE_NONE:
-                            //setStatus(R.string.title_not_connected);
                             break;
                     }
                     break;
@@ -130,9 +120,18 @@ public class Client_Fragment extends Fragment {
             @Override
             public void onClick(View v) {
                 output.append("msg sent\n");
-                sendMessage();
+                sendMessage("wassup from client\n");
             }
         });
+        btn_ready = (Button) myView.findViewById(R.id.ready_game_client);
+        btn_ready.setEnabled(false);
+        btn_ready.setOnClickListener( new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                sendMessage("choosingDialogQuery");
+            }
+        });
+
 
         //setup the bluetooth adapter.
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -216,16 +215,16 @@ public class Client_Fragment extends Fragment {
 
             mChatService.connect(device);
             btn_send.setEnabled(true); //sending only if connected
+            btn_ready.setEnabled(true);
         } else
             Log.v(TAG, "device is null");
     }
 
-    public void sendMessage() {
+    public void sendMessage(String msg) {
         if (mChatService.getState() != BluetoothService.STATE_CONNECTED) {
             Toast.makeText(getActivity(), "not connected", Toast.LENGTH_SHORT).show();
             return;
         }
-        String msg = "wassup from client \n";
         mChatService.write(msg.getBytes());
     }
 

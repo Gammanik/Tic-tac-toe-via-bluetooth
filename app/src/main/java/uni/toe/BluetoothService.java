@@ -61,18 +61,6 @@ public class BluetoothService {
     }
 
     /**
-     * Update UI title according to the current state of the chat connection
-     */
-    private synchronized void updateUserInterfaceTitle() {
-        mState = getState();
-        Log.d(TAG, "updateUserInterfaceTitle() " + mNewState + " -> " + mState);
-        mNewState = mState;
-
-        // Give the new state to the Handler so the UI Activity can update
-        mHandler.obtainMessage(Constants.MESSAGE_STATE_CHANGE, mNewState, -1).sendToTarget();
-    }
-
-    /**
      * Return the current connection state.
      */
     public synchronized int getState() {
@@ -89,22 +77,17 @@ public class BluetoothService {
         // Cancel any thread attempting to make a connection
         if (mConnectThread != null) {
             mConnectThread.cancel();
-            mConnectThread = null;
-        }
+            mConnectThread = null; }
 
         // Cancel any thread currently running a connection
         if (mConnectedThread != null) {
             mConnectedThread.cancel();
-            mConnectedThread = null;
-        }
+            mConnectedThread = null; }
 
         // Start the thread to listen on a BluetoothServerSocket
         if (mSecureAcceptThread == null) {
             mSecureAcceptThread = new AcceptThread();
-            mSecureAcceptThread.start();
-        }
-        // Update UI title
-        updateUserInterfaceTitle();
+            mSecureAcceptThread.start(); }
     }
 
     /**
@@ -118,21 +101,17 @@ public class BluetoothService {
         if (mState == STATE_CONNECTING) {
             if (mConnectThread != null) {
                 mConnectThread.cancel();
-                mConnectThread = null;
-            }
+                mConnectThread = null; }
         }
 
         // Cancel any thread currently running a connection
         if (mConnectedThread != null) {
             mConnectedThread.cancel();
-            mConnectedThread = null;
-        }
+            mConnectedThread = null; }
 
         // Start the thread to connect with the given device
         mConnectThread = new ConnectThread(device);
         mConnectThread.start();
-        // Update UI title
-        updateUserInterfaceTitle();
     }
 
     /**
@@ -148,20 +127,17 @@ public class BluetoothService {
         // Cancel the thread that completed the connection
         if (mConnectThread != null) {
             mConnectThread.cancel();
-            mConnectThread = null;
-        }
+            mConnectThread = null; }
 
         // Cancel any thread currently running a connection
         if (mConnectedThread != null) {
             mConnectedThread.cancel();
-            mConnectedThread = null;
-        }
+            mConnectedThread = null; }
 
         // Cancel the accept thread because we only want to connect to one device
         if (mSecureAcceptThread != null) {
             mSecureAcceptThread.cancel();
-            mSecureAcceptThread = null;
-        }
+            mSecureAcceptThread = null; }
 
         // Start the thread to manage the connection and perform transmissions
         mConnectedThread = new ConnectedThread(socket);
@@ -183,22 +159,17 @@ public class BluetoothService {
 
         if (mConnectThread != null) {
             mConnectThread.cancel();
-            mConnectThread = null;
-        }
+            mConnectThread = null; }
 
         if (mConnectedThread != null) {
             mConnectedThread.cancel();
-            mConnectedThread = null;
-        }
+            mConnectedThread = null; }
 
         if (mSecureAcceptThread != null) {
             mSecureAcceptThread.cancel();
-            mSecureAcceptThread = null;
-        }
+            mSecureAcceptThread = null; }
 
         mState = STATE_NONE;
-        // Update UI title
-        updateUserInterfaceTitle();
     }
 
     /**
@@ -231,8 +202,6 @@ public class BluetoothService {
         mHandler.sendMessage(msg);
 
         mState = STATE_NONE;
-        // Update UI title
-        updateUserInterfaceTitle();
 
         // Start the service over to restart listening mode
         BluetoothService.this.start();
@@ -250,8 +219,6 @@ public class BluetoothService {
         mHandler.sendMessage(msg);
 
         mState = STATE_NONE;
-        // Update UI title
-        updateUserInterfaceTitle();
 
         // Start the service over to restart listening mode
         BluetoothService.this.start();
@@ -453,13 +420,11 @@ public class BluetoothService {
 
         /**
          * Write to the connected OutStream.
-         *
          * @param buffer The bytes to write
          */
         public void write(byte[] buffer) {
             try {
                 mmOutStream.write(buffer);
-
                 // Share the sent message back to the UI Activity
                 mHandler.obtainMessage(Constants.MESSAGE_WRITE, -1, -1, buffer)
                         .sendToTarget();

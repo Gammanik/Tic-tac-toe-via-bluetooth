@@ -1,23 +1,13 @@
 package uni.toe;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-
 import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothServerSocket;
-import android.bluetooth.BluetoothSocket;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.provider.SyncStateContract;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
+import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -31,7 +21,6 @@ import android.widget.Toast;
  */
 public class Server_Fragment extends Fragment {
 
-
     private static String TAG = "serverFragment";
     private BluetoothService mChatService = null;
 
@@ -43,7 +32,8 @@ public class Server_Fragment extends Fragment {
     public Server_Fragment() {
         // Required empty public constructor
     }
-    
+
+    //TODO: put it in the separate class to avoid repetition?
     private final Handler handler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
@@ -75,7 +65,13 @@ public class Server_Fragment extends Fragment {
                     // construct a string from the valid bytes in the buffer
                     String readMessage = new String(readBuf, 0, msg.arg1);
 
-                    output.append("got a msg from client: " + readMessage + "\n");
+                    output.append("msg from client: " + readMessage + "\n");
+                    //in the beginning of game query sent
+                    if(readMessage.equals("choosingDialogQuery"))  {
+                        AlertDialog dialog = createDialog();
+                        dialog.show();
+                        output.append("dialog box created - starting the game");
+                    }
                     break;
                 case Constants.MESSAGE_DEVICE_NAME:
                     //TODO: save the connected device's name
@@ -111,12 +107,11 @@ public class Server_Fragment extends Fragment {
         //text field for output info.
         output = (TextView) myView.findViewById(R.id.sv_output);
         btn_start = (Button) myView.findViewById(R.id.start_server);
-
         btn_start.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 output.append("sending msg\n");
-                sendMessage();
+                sendMessage("wassup");
             }
         });
 
@@ -141,18 +136,35 @@ public class Server_Fragment extends Fragment {
 
     @Override
     public void onResume() {
-        mkmsg("ONRESUME creating ");
         super.onResume();
         if (mChatService != null) {
             // Only if the state is STATE_NONE, do we know that we haven't started already
             if (mChatService.getState() == BluetoothService.STATE_NONE) {
-                // Start the Bluetooth chat services
+                // Start the Bluetooth service
                 mChatService.start();
             }
         }
 
     }
 
+    public AlertDialog createDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        builder.setMessage("Choose your symbol: ").setTitle("The player 2 is ready");
+        builder.setPositiveButton("X", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                // User choose to play X
+                //switch to a new fragment here??
+                Toast.makeText(getActivity(), "X symbol is shosen", Toast.LENGTH_SHORT).show();
+            }
+        });
+        builder.setNegativeButton("O", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                // User choose to play O
+                Toast.makeText(getActivity(), "O symbol is shosen", Toast.LENGTH_SHORT).show();
+            }
+        });
+        return builder.create();
+    }
 
     public void mkmsg(String str) {
         //handler junk, because thread can't update screen!
@@ -164,12 +176,12 @@ public class Server_Fragment extends Fragment {
     }
 
 
-    public void sendMessage() {
+    public void sendMessage(String msg) {
         if (mChatService.getState() != BluetoothService.STATE_CONNECTED) {
             Toast.makeText(getActivity(), "not connected", Toast.LENGTH_SHORT).show();
             return;
         }
-       mChatService.write("wassup from server \n".getBytes());
+       mChatService.write(msg.getBytes());
     }
 
 
