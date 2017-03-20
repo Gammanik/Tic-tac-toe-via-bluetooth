@@ -28,7 +28,6 @@
                 android:textStyle="bold"
                 android:textAppearance="?android:attr/textAppearanceLarge"
                 android:background="@drawable/back"
-                android:onClick="cellClick"
                 android:clickable="true"/>
             <TextView
                 android:id="@+id/cell12"
@@ -40,7 +39,6 @@
                 android:textStyle="bold"
                 android:textAppearance="?android:attr/textAppearanceLarge"
                 android:background="@drawable/back"
-                android:onClick="cellClick"
                 android:clickable="true"/>
             <TextView
                 android:id="@+id/cell13"
@@ -52,7 +50,6 @@
                 android:textStyle="bold"
                 android:textAppearance="?android:attr/textAppearanceLarge"
                 android:background="@drawable/back"
-                android:onClick="cellClick"
                 android:clickable="true"/>
         </TableRow>
         <TableRow
@@ -71,7 +68,6 @@
                 android:textStyle="bold"
                 android:textAppearance="?android:attr/textAppearanceLarge"
                 android:background="@drawable/back"
-                android:onClick="cellClick"
                 android:clickable="true"/>
             <TextView
                 android:id="@+id/cell22"
@@ -83,7 +79,6 @@
                 android:textStyle="bold"
                 android:textAppearance="?android:attr/textAppearanceLarge"
                 android:background="@drawable/back"
-                android:onClick="cellClick"
                 android:clickable="true"/>
             <TextView
                 android:id="@+id/cell23"
@@ -95,7 +90,6 @@
                 android:textStyle="bold"
                 android:textAppearance="?android:attr/textAppearanceLarge"
                 android:background="@drawable/back"
-                android:onClick="cellClick"
                 android:clickable="true"/>
         </TableRow>
         <TableRow
@@ -115,7 +109,6 @@
                 android:textStyle="bold"
                 android:textAppearance="?android:attr/textAppearanceLarge"
                 android:background="@drawable/back"
-                android:onClick="cellClick"
                 android:clickable="true"/>
             <TextView
                 android:id="@+id/cell32"
@@ -127,7 +120,6 @@
                 android:textStyle="bold"
                 android:textAppearance="?android:attr/textAppearanceLarge"
                 android:background="@drawable/back"
-                android:onClick="cellClick"
                 android:clickable="true"/>
             <TextView
                 android:id="@+id/cell33"
@@ -139,7 +131,6 @@
                 android:textStyle="bold"
                 android:textAppearance="?android:attr/textAppearanceLarge"
                 android:background="@drawable/back"
-                android:onClick="cellClick"
                 android:clickable="true"/>
         </TableRow>
     </TableLayout>
@@ -158,13 +149,11 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:checked="true"
-                android:text="X"
-                android:onClick="onRadioButtonClicked"/>
+                android:text="X"/>
             <RadioButton android:id="@+id/radio_O"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="O"
-                android:onClick="onRadioButtonClicked"/>
+                android:text="O"/>
         </RadioGroup>
         <TextView
             android:id="@+id/Reset"

@@ -25,7 +25,7 @@ public class Server_Fragment extends Fragment {
 
     FragmentManager fragmentManager;
     private static String TAG = "serverFragment";
-    private BluetoothService mChatService = null;
+    private static BluetoothService mChatService = null;
 
     BluetoothAdapter mBluetoothAdapter = null;
 
@@ -71,6 +71,9 @@ public class Server_Fragment extends Fragment {
                         dialog.show();
                         output.append("dialog box created - starting the game");
                     }
+
+                    Toast.makeText(activity, readMessage,
+                            Toast.LENGTH_SHORT).show();
                     break;
                 case Constants.MESSAGE_DEVICE_NAME:
                     //TODO: save the connected device's name
@@ -129,7 +132,8 @@ public class Server_Fragment extends Fragment {
     public void onDestroy() {
         super.onDestroy();
         if (mChatService != null) {
-            mChatService.stop(); //not close it
+            //not closing it for using in Game_Fragment
+            //mChatService.stop();
         }
     }
 
@@ -192,7 +196,7 @@ public class Server_Fragment extends Fragment {
        mChatService.write(msg.getBytes());
     }
 
-    public BluetoothService getBluetoothService() {
+    static public BluetoothService getBluetoothService() {
         //invoke it in Game_Fragment to get the connectedThread??
         return mChatService;
     }
