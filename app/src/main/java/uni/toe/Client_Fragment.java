@@ -54,16 +54,14 @@ public class Client_Fragment extends Fragment {
                     }
                     break;
                 case Constants.MESSAGE_WRITE:
-                    byte[] writeBuf = (byte[]) msg.obj;
-                    // construct a string from the buffer
-                    String writeMessage = new String(writeBuf);
-                    mkmsg(writeMessage);
+                    //I don't know; just doing it manually
                     break;
                 case Constants.MESSAGE_READ:
                     byte[] readBuf = (byte[]) msg.obj;
                     // construct a string from the valid bytes in the buffer
                     String readMessage = new String(readBuf, 0, msg.arg1);
                     output.append("got a msg from server: " + readMessage +"\n");
+
                     //when server have the symbol chosen
                     if(readMessage.equals("server decided to be X"))  {
                         output.append("playing O // agree??"); //TODO: dialog box
@@ -86,15 +84,6 @@ public class Client_Fragment extends Fragment {
             }
         }
     };
-
-    public void mkmsg(String str) {
-        //handler junk, because thread can't update screen!
-        Message msg = new Message();
-        Bundle b = new Bundle();
-        b.putString("msg", str);
-        msg.setData(b);
-        handler.sendMessage(msg);
-    }
 
 
     @Override

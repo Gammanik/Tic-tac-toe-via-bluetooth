@@ -12,4 +12,10 @@ public class Constants {
     // Key names received from the BluetoothChatService Handler
     public static final String DEVICE_NAME = "device_name";
     public static final String TOAST = "toast";
+
+
+    public static final int NONE = 1000;
+    public static final int X = 100;
+    public static final int O = 200;
+
 }

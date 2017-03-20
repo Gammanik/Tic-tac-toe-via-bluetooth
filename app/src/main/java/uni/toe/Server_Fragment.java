@@ -54,10 +54,6 @@ public class Server_Fragment extends Fragment {
                     }
                     break;
                 case Constants.MESSAGE_WRITE:
-                    byte[] writeBuf = (byte[]) msg.obj;
-                    // construct a string from the buffer
-                    String writeMessage = new String(writeBuf);
-                    mkmsg(writeMessage);
                     break;
                 case Constants.MESSAGE_READ:
                     byte[] readBuf = (byte[]) msg.obj;
@@ -71,9 +67,6 @@ public class Server_Fragment extends Fragment {
                         dialog.show();
                         output.append("dialog box created - starting the game");
                     }
-
-                    Toast.makeText(activity, readMessage,
-                            Toast.LENGTH_SHORT).show();
                     break;
                 case Constants.MESSAGE_DEVICE_NAME:
                     //TODO: save the connected device's name
@@ -157,11 +150,11 @@ public class Server_Fragment extends Fragment {
             public void onClick(DialogInterface dialog, int id) {
                 // User choose to play X
                 //switch to a new fragment here??
-                mkmsg("server decided to be X");
+                sendMessage("server decided to be X");
 
                 fragmentManager = getActivity().getSupportFragmentManager();
                 FragmentTransaction transaction = fragmentManager.beginTransaction();
-                transaction.replace(R.id.activity_main, new Game_Fragment()); //??? R.id.fragment_client?
+                transaction.replace(R.id.activity_main, Game_Fragment.newInstance("X"));
                 transaction.addToBackStack(null);
                 transaction.commit();
                 Toast.makeText(getActivity(), "X symbol is shosen", Toast.LENGTH_SHORT).show();
@@ -171,21 +164,13 @@ public class Server_Fragment extends Fragment {
         builder.setNegativeButton("O", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
                 // User choose to play O
-                mkmsg("server decided to be O");
+                sendMessage("server decided to be O");
                 Toast.makeText(getActivity(), "O symbol is shosen", Toast.LENGTH_SHORT).show();
             }
         });
         return builder.create();
     }
 
-    public void mkmsg(String str) {
-        //handler junk, because thread can't update screen!
-        Message msg = new Message();
-        Bundle b = new Bundle();
-        b.putString("msg", str);
-        msg.setData(b);
-        handler.sendMessage(msg);
-    }
 
 
     public void sendMessage(String msg) {
