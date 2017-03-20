@@ -7,6 +7,8 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentTransaction;
+import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -21,6 +23,7 @@ import android.widget.Toast;
  */
 public class Server_Fragment extends Fragment {
 
+    FragmentManager fragmentManager;
     private static String TAG = "serverFragment";
     private BluetoothService mChatService = null;
 
@@ -42,15 +45,11 @@ public class Server_Fragment extends Fragment {
                 case Constants.MESSAGE_STATE_CHANGE:
                     switch (msg.arg1) {
                         case BluetoothService.STATE_CONNECTED:
-                            //setStatus(getString(R.string.title_connected_to, mConnectedDeviceName));
-                            //mConversationArrayAdapter.clear();
                             break;
                         case BluetoothService.STATE_CONNECTING:
-                            //setStatus(R.string.title_connecting);
                             break;
                         case BluetoothService.STATE_LISTEN:
                         case BluetoothService.STATE_NONE:
-                            //setStatus(R.string.title_not_connected);
                             break;
                     }
                     break;
@@ -130,7 +129,7 @@ public class Server_Fragment extends Fragment {
     public void onDestroy() {
         super.onDestroy();
         if (mChatService != null) {
-            mChatService.stop();
+            mChatService.stop(); //not close it
         }
     }
 
@@ -154,12 +153,21 @@ public class Server_Fragment extends Fragment {
             public void onClick(DialogInterface dialog, int id) {
                 // User choose to play X
                 //switch to a new fragment here??
+                mkmsg("server decided to be X");
+
+                fragmentManager = getActivity().getSupportFragmentManager();
+                FragmentTransaction transaction = fragmentManager.beginTransaction();
+                transaction.replace(R.id.activity_main, new Game_Fragment()); //??? R.id.fragment_client?
+                transaction.addToBackStack(null);
+                transaction.commit();
                 Toast.makeText(getActivity(), "X symbol is shosen", Toast.LENGTH_SHORT).show();
+
             }
         });
         builder.setNegativeButton("O", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
                 // User choose to play O
+                mkmsg("server decided to be O");
                 Toast.makeText(getActivity(), "O symbol is shosen", Toast.LENGTH_SHORT).show();
             }
         });
@@ -184,7 +192,10 @@ public class Server_Fragment extends Fragment {
        mChatService.write(msg.getBytes());
     }
 
-
+    public BluetoothService getBluetoothService() {
+        //invoke it in Game_Fragment to get the connectedThread??
+        return mChatService;
+    }
 
 }
 

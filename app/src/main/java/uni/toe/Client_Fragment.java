@@ -64,6 +64,13 @@ public class Client_Fragment extends Fragment {
                     // construct a string from the valid bytes in the buffer
                     String readMessage = new String(readBuf, 0, msg.arg1);
                     output.append("got a msg from server: " + readMessage +"\n");
+                    //when server have the symbol chosen
+                    if(readMessage.equals("server decided to be X"))  {
+                        output.append("playing O // agree??"); //TODO: dialog box
+                    }
+                    if(readMessage.equals("server decided to be O"))  {
+                        output.append("playing X // agree??");
+                    }
                     break;
                 case Constants.MESSAGE_DEVICE_NAME:
                     if (null != activity) {
