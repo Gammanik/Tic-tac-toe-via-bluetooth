@@ -20,14 +20,15 @@ public class Game_Fragment extends Fragment {
 
     BluetoothService mConnectedThread = null;
     //TODO: how to figure who's turn is it?
-    private String mark;
-    public static String MARK_CHOSEN;
+    public String mark;
+    public static String MARK_CHOSEN = "MARK_CHOSEN";
     public static int[][] matrix = new int[3][3]; //matrix to know who won
 
     public static TextView arrayOfButtons[][] = new TextView[3][3];
     //buttons
     //TODO: is it make sence to make them static here?
     static TextView c00 = null;
+    static TextView c01 = null;
 
     public static String IS_SERVER;
     private boolean isServer;
@@ -39,7 +40,7 @@ public class Game_Fragment extends Fragment {
         //depends if it's client or server
         //does it matter?
         Game_Fragment game = new Game_Fragment();
-        Bundle bdl = new Bundle();
+        Bundle bdl = new Bundle(2);
         bdl.putString(MARK_CHOSEN, mark);
         bdl.putBoolean(IS_SERVER, server);
 
@@ -49,12 +50,6 @@ public class Game_Fragment extends Fragment {
 
     public Game_Fragment() {
         // Required empty public constructor
-        /**
-         * TODO: pull connectedThread
-         *  depends on fragment created the class
-         * TODO: put the mark
-         *  depends what were chosen by server
-         */
     }
 
     private final Handler handler = new Handler() {
@@ -72,10 +67,9 @@ public class Game_Fragment extends Fragment {
                     Toast.makeText(activity, readMessage,
                             Toast.LENGTH_SHORT).show();
 
-                    //get a cell clicked
-                    //9 if's statements here??
                     //in message we getting coordinates
-                    updateUI();
+                    //putInMatrix(0, 2);
+                    //updateUI();
 
 
                     break;
@@ -88,15 +82,16 @@ public class Game_Fragment extends Fragment {
         super.onCreate(savedInstanceState);
         //depends on who created the class: server or client
 
+        mark = getArguments().getString(MARK_CHOSEN);
         isServer = getArguments().getBoolean(IS_SERVER);
-        if(isServer)
-            mConnectedThread = Server_Fragment.getBluetoothService();
-        else
-            mConnectedThread = Client_Fragment.getBluetoothService();
-        
+        if(isServer) {
+            mConnectedThread = Server_Fragment.getBluetoothService(); }
+        else {
+            mConnectedThread = Client_Fragment.getBluetoothService(); }
+
         mConnectedThread.putNewHandler(handler); //really bad
 
-        mark = getArguments().getString(MARK_CHOSEN);
+
     }
 
     @Override
@@ -107,13 +102,38 @@ public class Game_Fragment extends Fragment {
         status.setText("playing for: " + mark);
 
         //TODO? all 9 cells clicks implemented here
+        //TODO: I could just iterate through all the buttons
         c00 = (TextView) myView.findViewById(R.id.cell11);
+        c01 = (TextView) myView.findViewById(R.id.cell12);
+
+        buttonsToArray();
+
+
+        /**
+        //put listeners for all the buttons
+        for(int i = 0; i < 3; i++) {
+            for(int j = 0; j < 3; j++) {
+                arrayOfButtons[i][j].setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        //can't make i or j final
+                    }
+                });
+            }
+        }
+        **/
+
         c00.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                mConnectedThread.write("gogogo".getBytes()); //need to it it in handler
+
+
+                mConnectedThread.write("00".getBytes()); //need to it it in handler
+                arrayOfButtons[0][0].setText("what else");
+                //putInMatrix(0, 0);
+                //updateUI();
+
                 //checkIfEmpty() method here - if not not put text
-                //c11.setText(mark);
                 //c11.setEnabled(false);
                 //also need to block all the ohter cells when it's another player's turn
                 //but how to implement another player's turn?
@@ -134,6 +154,7 @@ public class Game_Fragment extends Fragment {
     private void buttonsToArray() {
         //to iterate trough buttons later
         arrayOfButtons[0][0] = c00;
+        arrayOfButtons[0][1] = c01;
     }
 
     public void blockButtons() {
@@ -142,20 +163,34 @@ public class Game_Fragment extends Fragment {
         //later
     }
 
-    public void updateUI() {
-        //draw the button according matrix values
-        //make an array of buttons and iterate threw it
-        c00.setText(mark);
+    public void unblockFreeButtons() {
+        //invoke when our turn
     }
 
-    public void readClickUpdateMatrix(int i, int j) { //sending
-        if(matrix[i][j] == Constants.NONE) { //only if not occupied before
+    public void updateUI() {
+        /** invoke after every event
+            merge matrix with UI
+         **/
+        for(int i = 0; i < 3; i++) {
+            for(int j = 0; j < 3; j++) {
+                switch (matrix[i][j]) {
+                    case Constants.X: arrayOfButtons[i][j].setText("X");
+                        break;
+                    case Constants.O: arrayOfButtons[i][j].setText("O");
+                }
+            }
+        }
+    }
+
+    public void putInMatrix(int i, int j) { //sending
+        if(matrix[i][j] != Constants.X && matrix[i][j] != Constants.O) { //only if not occupied before
             switch (mark) {
                 case "X": matrix[i][j] = Constants.X;
                    break;
                 case "O": matrix[i][j] = Constants.O;
             }
         }
+        //TODO: handle occupied case? or they al'll be blocked anyway?
     }
 
     public void readClickedButton(String msg) {
@@ -163,10 +198,8 @@ public class Game_Fragment extends Fragment {
 
     }
 
-    public void handleCellClick(TextView cell) {
-        //check for winning combination
-        //X goes first
-        //cell.
+    public void handleCellClick(String msg) {
+
     }
 
     public boolean checkIfWin() {
