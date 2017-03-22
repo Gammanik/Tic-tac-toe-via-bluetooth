@@ -17,21 +17,27 @@ public class Game_Fragment extends Fragment {
     TextView status;
 
    public static String turn = "X"; //if turn.equals(mark) then go
+   private String myMark;
 
     BluetoothService mConnectedThread = null;
     //TODO: how to figure who's turn is it?
-    public String mark;
+
     public static String MARK_CHOSEN = "MARK_CHOSEN";
     public static int[][] matrix = new int[3][3]; //matrix to know who won
 
     public static TextView arrayOfButtons[][] = new TextView[3][3];
     //buttons
-    //TODO: is it make sence to make them static here?
-    static TextView c00 = null;
-    static TextView c01 = null;
+    TextView c00 = null;
+    TextView c01 = null;
+    TextView c02 = null;
+    TextView c10 = null;
+    TextView c11 = null;
+    TextView c12 = null;
+    TextView c20 = null;
+    TextView c21 = null;
+    TextView c22 = null;
 
     public static String IS_SERVER;
-    private boolean isServer;
 
 
     public static final Game_Fragment newInstance(String mark, boolean server) {
@@ -64,13 +70,18 @@ public class Game_Fragment extends Fragment {
                     byte[] readBuf = (byte[]) msg.obj;
                     // construct a string from the valid bytes in the buffer
                     String readMessage = new String(readBuf, 0, msg.arg1);
-                    Toast.makeText(activity, readMessage,
-                            Toast.LENGTH_SHORT).show();
 
                     //in message we getting coordinates
-                    //putInMatrix(0, 2);
-                    //updateUI();
+                    int i = readMessage.codePointAt(0) - 48;
+                    int j = readMessage.codePointAt(1) - 48;
+                    //only for messages with coordinates info
+                    if(i < 3 && j < 3 && readMessage.length() == 2) {
+                        putInMatrix(i, j);
+                        updateUI();
+                    }
 
+                    Toast.makeText(activity, "i= " + i + "  j= " + j,
+                            Toast.LENGTH_SHORT).show();
 
                     break;
             }
@@ -80,9 +91,9 @@ public class Game_Fragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        //depends on who created the class: server or client
+        boolean isServer;
 
-        mark = getArguments().getString(MARK_CHOSEN);
+        myMark = getArguments().getString(MARK_CHOSEN);
         isServer = getArguments().getBoolean(IS_SERVER);
         if(isServer) {
             mConnectedThread = Server_Fragment.getBluetoothService(); }
@@ -90,8 +101,6 @@ public class Game_Fragment extends Fragment {
             mConnectedThread = Client_Fragment.getBluetoothService(); }
 
         mConnectedThread.putNewHandler(handler); //really bad
-
-
     }
 
     @Override
@@ -99,46 +108,26 @@ public class Game_Fragment extends Fragment {
         View myView = inflater.inflate(R.layout.fragment_game, container, false);
 
         status = (TextView) myView.findViewById(R.id.Status);
-        status.setText("playing for: " + mark);
+        status.setText("playing for: " + myMark);
 
-        //TODO? all 9 cells clicks implemented here
-        //TODO: I could just iterate through all the buttons
-        c00 = (TextView) myView.findViewById(R.id.cell11);
-        c01 = (TextView) myView.findViewById(R.id.cell12);
-
+        initButtons(myView);
         buttonsToArray();
 
 
-        /**
         //put listeners for all the buttons
         for(int i = 0; i < 3; i++) {
             for(int j = 0; j < 3; j++) {
+                final String col = String.valueOf(i);
+                final String row = String.valueOf(j);
+                final String colRow = col + row;
                 arrayOfButtons[i][j].setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        //can't make i or j final
+                        handleCellClick(colRow);
                     }
                 });
             }
         }
-        **/
-
-        c00.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-
-
-                mConnectedThread.write("00".getBytes()); //need to it it in handler
-                arrayOfButtons[0][0].setText("what else");
-                //putInMatrix(0, 0);
-                //updateUI();
-
-                //checkIfEmpty() method here - if not not put text
-                //c11.setEnabled(false);
-                //also need to block all the ohter cells when it's another player's turn
-                //but how to implement another player's turn?
-            }
-        });
 
         return myView;
     }
@@ -151,10 +140,40 @@ public class Game_Fragment extends Fragment {
         }
     }
 
+    private void initButtons(View myView) {
+        c00 = (TextView) myView.findViewById(R.id.cell11);
+        c01 = (TextView) myView.findViewById(R.id.cell12);
+        c02 = (TextView) myView.findViewById(R.id.cell13);
+        c10 = (TextView) myView.findViewById(R.id.cell21);
+        c11 = (TextView) myView.findViewById(R.id.cell22);
+        c12 = (TextView) myView.findViewById(R.id.cell23);
+        c20 = (TextView) myView.findViewById(R.id.cell31);
+        c21 = (TextView) myView.findViewById(R.id.cell32);
+        c22 = (TextView) myView.findViewById(R.id.cell33);
+        //TODO: then I need to put buttonsToArray() here
+    }
+
+    //TODO?: if I'll return array[][] then might not need to have static var buttons
     private void buttonsToArray() {
         //to iterate trough buttons later
         arrayOfButtons[0][0] = c00;
         arrayOfButtons[0][1] = c01;
+        arrayOfButtons[0][2] = c02;
+        arrayOfButtons[1][0] = c10;
+        arrayOfButtons[1][1] = c11;
+        arrayOfButtons[1][2] = c12;
+        arrayOfButtons[2][0] = c20;
+        arrayOfButtons[2][1] = c21;
+        arrayOfButtons[2][2] = c22;
+    }
+
+    private void handleCellClick(String colRow) {
+        int col = colRow.codePointAt(0)-48;
+        int row = colRow.codePointAt(1)-48;
+        //TODO: check if
+        mConnectedThread.write(colRow.getBytes());
+        putInMatrix(col, row);
+        updateUI();
     }
 
     public void blockButtons() {
@@ -168,9 +187,7 @@ public class Game_Fragment extends Fragment {
     }
 
     public void updateUI() {
-        /** invoke after every event
-            merge matrix with UI
-         **/
+        //invoke after every event; merge matrix with UI
         for(int i = 0; i < 3; i++) {
             for(int j = 0; j < 3; j++) {
                 switch (matrix[i][j]) {
@@ -184,22 +201,13 @@ public class Game_Fragment extends Fragment {
 
     public void putInMatrix(int i, int j) { //sending
         if(matrix[i][j] != Constants.X && matrix[i][j] != Constants.O) { //only if not occupied before
-            switch (mark) {
+            switch (myMark) {
                 case "X": matrix[i][j] = Constants.X;
                    break;
                 case "O": matrix[i][j] = Constants.O;
             }
         }
         //TODO: handle occupied case? or they al'll be blocked anyway?
-    }
-
-    public void readClickedButton(String msg) {
-        //if(msg.equals(""))
-
-    }
-
-    public void handleCellClick(String msg) {
-
     }
 
     public boolean checkIfWin() {
