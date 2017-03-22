@@ -16,11 +16,10 @@ public class Game_Fragment extends Fragment {
 
     TextView status;
 
-   public static String turn = "X"; //if turn.equals(mark) then go
+   public String turn = "X"; //X goes first
    private String myMark;
 
     BluetoothService mConnectedThread = null;
-    //TODO: how to figure who's turn is it?
 
     public static String MARK_CHOSEN = "MARK_CHOSEN";
     public static int[][] matrix = new int[3][3]; //matrix to know who won
@@ -41,10 +40,6 @@ public class Game_Fragment extends Fragment {
 
 
     public static final Game_Fragment newInstance(String mark, boolean server) {
-        //instead of pulling the connectedThread it's better to put it in constructor
-        //TODO: put BluetoothService mConnectedThread in constructor
-        //depends if it's client or server
-        //does it matter?
         Game_Fragment game = new Game_Fragment();
         Bundle bdl = new Bundle(2);
         bdl.putString(MARK_CHOSEN, mark);
@@ -76,8 +71,9 @@ public class Game_Fragment extends Fragment {
                     int j = readMessage.codePointAt(1) - 48;
                     //only for messages with coordinates info
                     if(i < 3 && j < 3 && readMessage.length() == 2) {
-                        putInMatrix(i, j);
+                        putInMatrix(i, j, turn);
                         updateUI();
+                        switchTurn(turn);
                     }
 
                     Toast.makeText(activity, "i= " + i + "  j= " + j,
@@ -106,13 +102,11 @@ public class Game_Fragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View myView = inflater.inflate(R.layout.fragment_game, container, false);
-
         status = (TextView) myView.findViewById(R.id.Status);
         status.setText("playing for: " + myMark);
 
         initButtons(myView);
         buttonsToArray();
-
 
         //put listeners for all the buttons
         for(int i = 0; i < 3; i++) {
@@ -123,6 +117,7 @@ public class Game_Fragment extends Fragment {
                 arrayOfButtons[i][j].setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
+                        //TODO: check if win or matrix is full
                         handleCellClick(colRow);
                     }
                 });
@@ -170,20 +165,20 @@ public class Game_Fragment extends Fragment {
     private void handleCellClick(String colRow) {
         int col = colRow.codePointAt(0)-48;
         int row = colRow.codePointAt(1)-48;
-        //TODO: check if
-        mConnectedThread.write(colRow.getBytes());
-        putInMatrix(col, row);
-        updateUI();
+        //TODO: check turn
+        if (turn.equals(myMark)) { //if our turn
+            mConnectedThread.write(colRow.getBytes());
+            putInMatrix(col, row, myMark);
+            updateUI();
+            switchTurn(myMark);
+        }
     }
 
-    public void blockButtons() {
-        //iterate through buttons
-        //and setEnable(false) when it's not our turn
-        //later
-    }
-
-    public void unblockFreeButtons() {
-        //invoke when our turn
+    private void switchTurn(String currentTurn) { //change var turn
+        if(currentTurn.equals("X"))
+            turn = "O";
+        if(currentTurn.equals("O"))
+            turn = "X";
     }
 
     public void updateUI() {
@@ -199,9 +194,10 @@ public class Game_Fragment extends Fragment {
         }
     }
 
-    public void putInMatrix(int i, int j) { //sending
-        if(matrix[i][j] != Constants.X && matrix[i][j] != Constants.O) { //only if not occupied before
-            switch (myMark) {
+    public void putInMatrix(int i, int j, String currentMark) { //sending
+        //only if not occupied before
+        if(matrix[i][j] != Constants.X && matrix[i][j] != Constants.O) {
+            switch (currentMark) {
                 case "X": matrix[i][j] = Constants.X;
                    break;
                 case "O": matrix[i][j] = Constants.O;
@@ -210,8 +206,17 @@ public class Game_Fragment extends Fragment {
         //TODO: handle occupied case? or they al'll be blocked anyway?
     }
 
-    public boolean checkIfWin() {
+    private boolean checkIfWin() {
         //check matrix array
         return false;
+    }
+
+    private boolean isMatrixFull() {
+        //if there is no free cells
+        return false;
+    }
+
+    private void clearMatrix() {
+
     }
 }
