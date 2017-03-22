@@ -139,22 +139,7 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:background="#4d4d4d">
-        <RadioGroup
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:gravity="left"
-            android:orientation="horizontal">
-            <RadioButton android:id="@+id/radio_X"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:checked="true"
-                android:text="X"/>
-            <RadioButton android:id="@+id/radio_O"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="O"/>
-        </RadioGroup>
+
         <TextView
             android:id="@+id/Status"
             android:layout_weight="1"

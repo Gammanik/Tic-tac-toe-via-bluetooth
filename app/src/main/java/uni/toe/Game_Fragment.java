@@ -22,7 +22,7 @@ public class Game_Fragment extends Fragment {
     BluetoothService mConnectedThread = null;
 
     public static String MARK_CHOSEN = "MARK_CHOSEN";
-    public static int[][] matrix = new int[3][3]; //matrix to know who won
+    public int[][] matrix = new int[3][3]; //matrix to know who won
 
     public static TextView arrayOfButtons[][] = new TextView[3][3];
     //buttons
@@ -66,18 +66,23 @@ public class Game_Fragment extends Fragment {
                     // construct a string from the valid bytes in the buffer
                     String readMessage = new String(readBuf, 0, msg.arg1);
 
-                    //in message we getting coordinates
-                    int i = readMessage.codePointAt(0) - 48;
-                    int j = readMessage.codePointAt(1) - 48;
-                    //only for messages with coordinates info
-                    if(i < 3 && j < 3 && readMessage.length() == 2) {
-                        putInMatrix(i, j, turn);
-                        updateUI();
-                        switchTurn(turn);
+                    if(!isMatrixFull() && !isWinnerFounded()) {
+                        //in message we getting coordinates
+                        int i = readMessage.codePointAt(0) - 48;
+                        int j = readMessage.codePointAt(1) - 48;
+                        //only for messages with coordinates info
+                        if (i < 3 && j < 3 && readMessage.length() == 2) {
+                            putInMatrix(i, j, turn);
+                            updateUI();
+                            switchTurn(turn);
+                        }
+                        Toast.makeText(activity, "i= " + i + "  j= " + j,
+                                Toast.LENGTH_SHORT).show();
+
+                    } else {
+                        //TODO: dialog for a new game here
                     }
 
-                    Toast.makeText(activity, "i= " + i + "  j= " + j,
-                            Toast.LENGTH_SHORT).show();
 
                     break;
             }
@@ -118,7 +123,14 @@ public class Game_Fragment extends Fragment {
                     @Override
                     public void onClick(View v) {
                         //TODO: check if win or matrix is full
-                        handleCellClick(colRow);
+                        if(!isMatrixFull() && !isWinnerFounded()) {
+                            handleCellClick(colRow);
+                        } else {
+                            //create dialog proposing a new game
+                            //clearMatrix(); if agreed
+                            Toast.makeText(getActivity(), "game is done",
+                                    Toast.LENGTH_SHORT).show();
+                        }
                     }
                 });
             }
@@ -165,12 +177,15 @@ public class Game_Fragment extends Fragment {
     private void handleCellClick(String colRow) {
         int col = colRow.codePointAt(0)-48;
         int row = colRow.codePointAt(1)-48;
-        //TODO: check turn
+
         if (turn.equals(myMark)) { //if our turn
             mConnectedThread.write(colRow.getBytes());
             putInMatrix(col, row, myMark);
             updateUI();
             switchTurn(myMark);
+        } else {
+            Toast.makeText(getActivity(), "not your turn",
+                    Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -203,20 +218,53 @@ public class Game_Fragment extends Fragment {
                 case "O": matrix[i][j] = Constants.O;
             }
         }
-        //TODO: handle occupied case? or they al'll be blocked anyway?
     }
 
-    private boolean checkIfWin() {
-        //check matrix array
+    private boolean isWinnerFounded() {
+        //check matrix array for winning combination
+        //check diagonals
+        if(isWinCombination(matrix[0][0], matrix[1][1], matrix[2][2]))
+            return true;
+        if(isWinCombination(matrix[0][2], matrix[1][1], matrix[2][0]))
+            return true;
+
+        for(int i = 0; i < 3; i++) {
+            //check rows
+            if(isWinCombination(matrix[i][0], matrix[i][1], matrix[i][2]))
+                return true;
+            //check columns
+            if(isWinCombination(matrix[0][i], matrix[1][i], matrix[2][i]))
+                return true;
+        }
         return false;
     }
+
+    private boolean isWinCombination(int a, int b, int c) {
+
+        if(a == Constants.X && b == Constants.X && c == Constants.X)
+            return true;
+        if(a == Constants.O && b == Constants.O && c == Constants.O)
+            return true;
+        //otherwise
+        return false;
+    }
+
 
     private boolean isMatrixFull() {
-        //if there is no free cells
-        return false;
+        //if there is no free cells left
+        int filledCellsCounter = 0;
+        for(int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                if(matrix[i][j] == Constants.O || matrix[i][j] == Constants.X)
+                    filledCellsCounter++;
+            }
+        }
+
+        return filledCellsCounter == 9;
     }
 
     private void clearMatrix() {
 
     }
+
 }
