@@ -1,8 +1,4 @@
-# Program # 3
-Name: Nikita Bobyshev  
-Cosc 4010
+# tic-tace-toe game
 
-Description:  phone - google pixel, Nexus 5
-
-Anything that doesn't work:
-
+Connect your phones using bluetooth
+One is creating a new game and the second is just joining to it.
